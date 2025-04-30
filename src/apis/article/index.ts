@@ -22,7 +22,10 @@ export const getArticleDetail = (id?: number) => {
   );
 };
 
-// // 时间轴
+// 时间轴
+export const getTimeLine = () => {
+  return http.get(baseURLApi(`/article/timeLine`));
+};
 // export const getTimeLine = () => {
 //   return http.request({
 //     url: "/article/timeLine",
@@ -37,19 +40,11 @@ export const whereArticleList = (type: Number, typeId: Number) => {
     baseURLApi(`/article/where/list/${typeId}`),
     {
       params: {
-        type
-      }
+        type,
+      },
     }
   );
 };
-// export function whereArticleList(type: Number, typeId: Number) {
-//   return http.get(`/article/where/list/${typeId}`, {
-//     method: "get",
-//     params: {
-//       type,
-//     },
-//   });
-// }
 
 // // 文章访问量+1
 // export function addArticleVisit(id: Number) {

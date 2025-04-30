@@ -13,32 +13,32 @@ export const constantRouter = [
           title: "sin-blog | 忙里偷闲的sin",
         },
       },
-      // // 时间轴
-      // {
-      //     path: '/timeline',
-      //     component: () => import('@/views/Pigeonhole/TimeLine/index.vue'),
-      //     name: 'timeline',
-      //     meta: {
-      //         title: '时间轴',
-      //     }
-      // },
+      // 时间轴
+      {
+        path: "/timeline",
+        component: () => import("@/views/Pigeonhole/TimeLine/index.vue"),
+        name: "timeline",
+        meta: {
+          title: "时间轴",
+        },
+      },
       // 分类
       {
-          path: '/category/:id?',
-          component: () => import('@/views/Pigeonhole/Category/index.vue'),
-          name: 'category',
-          meta: {
-              title: '文章分类',
-          }
+        path: "/category/:id?",
+        component: () => import("@/views/Pigeonhole/Category/index.vue"),
+        name: "category",
+        meta: {
+          title: "文章分类",
+        },
       },
       // 标签
       {
-          path: '/tags/:id?',
-          component: () => import('@/views/Pigeonhole/Tags/index.vue'),
-          name: 'tags',
-          meta: {
-              title: '文章标签',
-          }
+        path: "/tags/:id?",
+        component: () => import("@/views/Pigeonhole/Tags/index.vue"),
+        name: "tags",
+        meta: {
+          title: "文章标签",
+        },
       },
       // // 树洞
       // {
@@ -82,15 +82,24 @@ export const constantRouter = [
           title: "关于网站",
         },
       },
-      // 友链
+      // 知识库
       {
-          path: '/knowledge',
-          component: () => import('@/views/Knowledge/index.vue'),
-          name: 'knowledge',
-          meta: {
-              title: '知识库',
-          }
+        path: "/knowledge",
+        component: () => import("@/views/Knowledge/index.vue"),
+        name: "knowledge",
+        meta: {
+          title: "知识库",
+        },
       },
+      {
+        path: "/knowledge/:id",
+        name: "KnowledgeDetail",
+        component: () => import("@/views/Knowledge/KnowledgeDetail.vue"),
+        meta: {
+          title: "详情"
+        }
+      },
+
       // // 音乐
       // {
       //     path: '/music',

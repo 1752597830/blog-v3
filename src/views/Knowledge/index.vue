@@ -1,338 +1,143 @@
 <template>
-  <div class="knowledge-wrapper">
-    <!-- 主体部分（左右布局） -->
-    <div class="main">
-      <!-- 左侧菜单 -->
-      <div
-        class="sidebar"
-        :style="{
-          width: isCollapse ? '0px' : '280px',
-          overflow: isCollapse ? 'hidden' : 'auto',
-        }"
-      >
-        <el-menu
-          class="menu"
-          :default-active="selectedId"
-          @select="handleSelect"
-          unique-opened
-          :collapse="isCollapse"
-        >
-          <template v-for="item in menuItems" :key="item.id">
-            <el-sub-menu v-if="item.children" :index="item.id.toString()">
-              <template #title>
-                <el-tooltip
-                  effect="dark"
-                  :content="item.name"
-                  placement="right"
-                >
-                  <span class="menu-text">{{ item.name }}</span>
-                </el-tooltip>
-              </template>
-              <el-menu-item
-                v-for="child in item.children"
-                :key="child.id"
-                :index="child.id.toString()"
-              >
-                <el-tooltip
-                  effect="dark"
-                  :content="child.name"
-                  placement="right"
-                >
-                  <span class="menu-text">{{ child.name }}</span>
-                </el-tooltip>
-              </el-menu-item>
-            </el-sub-menu>
-            <el-menu-item v-else :index="item.id.toString()">
-              <el-tooltip effect="dark" :content="item.name" placement="right">
-                <span class="menu-text">{{ item.name }}</span>
-              </el-tooltip>
-            </el-menu-item>
-          </template>
-        </el-menu>
+    <div class="p-5" style="padding-top: 100px;">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <KnowledgeCard
+          v-for="item in paginatedList"
+          :key="item.id"
+          :data="item"
+          :expanded="expandedId === item.id"
+          @expand="expandedId = expandedId === item.id ? null : item.id"
+        />
       </div>
-      <!-- 折叠按钮 -->
-      <div
-        @click="toggleCollapse"
-        style="align-items: center; display: flex; padding-left: 10px"
-      >
-        <el-icon v-if="isCollapse"><ArrowRightBold /></el-icon>
-        <el-icon v-else><ArrowLeftBold /></el-icon>
-      </div>
-      <!-- 右侧内容 -->
-      <div class="content">
-        <Main is-side-bar>
-          <template #content>
-            <!-- Markdown 编辑器 -->
-            <MdPreview :modelValue="currentContent" />
-          </template>
-          <template #information>
-            <CardInfo />
-            <ElectronicClocks />
-            <div class="sticky_layout">
-              <div class="mt-[2.5em]">
-                <DirectoryCard />
-              </div>
-            </div>
-          </template>
-        </Main>
-        <MobileDirectoryCard
-          :id="id"
-          :scroll-element="scrollElement"
-          :is-show-move-catalog="isShowMoveCatalog"
-          @update:isShowMoveCatalog="(value) => (isShowMoveCatalog = value)"
+  
+      <!-- 分页控件 -->
+      <div class="mt-6 flex justify-center">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :page-size="pageSize"
+          :current-page="currentPage"
+          :total="knowledgeList.length"
+          @current-change="handlePageChange"
         />
       </div>
     </div>
-    <!-- 页面底部 -->
-    <Footer />
-  </div>
-</template>
-
-<!-- <script setup>
-  import { ref } from "vue";
-  import {generateKnowledgeMockData, MenuItem} from "./index"
-  const menuItems = ref<MenuItem[]>(generateKnowledgeMockData())
-//   const menuItems = ref([
-//     {
-//       id: 1,
-//       name: "项目介绍",
-//       children: [
-//         { id: 11, name: "背景与意义", content: "📘 这是背景内容..." },
-//         { id: 12, name: "功能模块", content: "📘 这是功能模块内容..." },
-//       ],
-//     },
-//     {
-//       id: 2,
-//       name: "环境配置",
-//       content: "💻 环境配置内容...",
-//     },
-//     {
-//       id: 3,
-//       name: "接口文档",
-//       children: [
-//         { id: 31, name: "用户模块", content: "📄 用户模块内容..." },
-//         { id: 32, name: "知识库模块", content: "📄 知识库内容..." },
-//       ],
-//     },
-//   ]);
+  </template>
   
-  const currentContent = ref(menuItems.value[0].children[0].content);
-  const selectedId = ref(menuItems.value[0].children[0].id.toString());
+  <script setup>
+  import { ref, computed } from "vue";
+  import KnowledgeCard from "./KnowledgeCard.vue";
+  import "element-plus/dist/index.css";
   
-  const handleSelect = (index) => {
-    for (const item of menuItems.value) {
-      if (item.id.toString() === index) {
-        selectedId.value = index;
-        currentContent.value = item.content || "暂无内容";
-        return;
-      }
-      if (item.children) {
-        const child = item.children.find((c) => c.id.toString() === index);
-        if (child) {
-          selectedId.value = index;
-          currentContent.value = child.content || "暂无内容";
-          return;
-        }
-      }
-    }
+  const expandedId = ref(null);
+  const currentPage = ref(1);
+  const pageSize = 6; // 每页显示的卡片数
+  
+  const handlePageChange = (page) => {
+    currentPage.value = page;
   };
-  </script> -->
-<script setup lang="ts">
-import { MdPreview } from "md-editor-v3";
-import { ArrowLeftBold, ArrowRightBold } from "@element-plus/icons-vue";
-import { ref, computed } from "vue";
-import { ElMessageBox } from "element-plus";
-import useWebsiteStore from "@/store/modules/website.ts";
-import MobileDirectoryCard from "../Article/MobileDirectoryCard/index.vue";
-import DirectoryCard from "../Article/DirectoryCard/index.vue";
-const scrollElement = document.documentElement;
-const id = "preview-only";
-const isCollapse = ref(false);
-const isShowMoveCatalog = ref(false);
-const websiteStore = useWebsiteStore();
-// 公告
-function announcement() {
-  ElMessageBox.alert(
-    `<pre>${websiteStore.webInfo?.sidebarAnnouncement}</pre>`,
-    "公告",
+  
+  // 计算当前页展示的数据
+  const paginatedList = computed(() => {
+    const start = (currentPage.value - 1) * pageSize;
+    return knowledgeList.slice(start, start + pageSize);
+  });
+  
+  const knowledgeList = [
     {
-      // if you want to disable its autofocus
-      // autofocus: false,
-      confirmButtonText: "关闭",
-      closeOnPressEscape: true,
-      dangerouslyUseHTMLString: true,
-    }
-  );
-}
-// 数据类型定义
-interface SubMenuItem {
-  id: number;
-  name: string;
-  content: string;
-}
-
-interface MenuItem {
-  id: number;
-  name: string;
-  children?: SubMenuItem[];
-}
-
-// 封装假数据
-const generateKnowledgeMockData = (): MenuItem[] => {
-  const menuItems: MenuItem[] = [];
-  let idCounter = 1;
-
-  for (let i = 1; i <= 50; i++) {
-    const parent: MenuItem = {
-      id: idCounter++,
-      name: `模块 ${i}`,
-      children: [],
-    };
-
-    const childCount = Math.floor(Math.random() * 4) + 2; // 2~5 个子模块
-
-    for (let j = 1; j <= childCount; j++) {
-      const child: SubMenuItem = {
-        id: idCounter++,
-        name: `模块 ${i}.${j}`,
-        content: `📚 欢迎来到 <strong>模块 ${i}.${j}</strong>，这是一个测试内容区域，支持 <em>富文本</em> 渲染。`,
-      };
-
-      parent.children?.push(child);
-    }
-
-    menuItems.push(parent);
-  }
-
-  return menuItems;
-};
-// 折叠菜单
-const toggleCollapse = () => {
-  isCollapse.value = !isCollapse.value;
-};
-// 菜单数据
-const menuItems = ref<MenuItem[]>(generateKnowledgeMockData());
-
-// 当前选中的子项 ID
-const selectedId = ref<string>("");
-
-// 当前内容
-const currentContent = computed(() => {
-  for (const parent of menuItems.value) {
-    if (parent.children) {
-      const match = parent.children.find(
-        (child) => child.id.toString() === selectedId.value
-      );
-      if (match) return match.content;
-    } else if (parent.id.toString() === selectedId.value) {
-      return `📘 ${parent.name} 暂无详细内容，请选择子项查看～`;
-    }
-  }
-  return "📖 请选择左侧的模块查看对应内容。";
-});
-
-// 菜单点击事件
-const handleSelect = (index: string) => {
-  selectedId.value = index;
-};
-</script>
-
-<style scoped lang="scss">
-.collapse-btn {
-  height: 40px;
-  text-align: center;
-  line-height: 40px;
-  cursor: pointer;
-  color: #ccc;
-}
-:deep(.el-menu-item) {
-  border-radius: 8px;
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-  margin: 4px 8px; /* 给选中状态留出圆角空间 */
-}
-
-/* 选中项样式 */
-:deep(.el-menu-item.is-active) {
-  background-color: #409eff !important;
-  color: #fff !important;
-  font-weight: bold;
-}
-
-.knowledge-wrapper {
-  display: flex;
-  flex-direction: column;
-  padding-top: 56px;
-  height: 100vh;
-}
-
-/* 主体区域：左右布局 */
-.main {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* 左侧菜单 */
-.sidebar {
-  width: 280px;
-  overflow-y: auto;
-  transition: width 0.3s ease;
-}
-
-/* 菜单文本截断 */
-.menu-text {
-  display: inline-block;
-  max-width: 280px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 右侧内容 */
-.content {
-  flex: 1;
-  padding-top: 20px;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-}
-
-// 移动端目录按钮
-.move_catalog_btn {
-  border-radius: 1em;
-  box-shadow: var(--el-box-shadow-light);
-  border: 1px solid var(--el-border-color);
-  background: white;
-  // 固定在右下角
-  position: fixed;
-  right: 5em;
-  bottom: 1em;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  visibility: hidden;
-  @media screen and (max-width: 910px) {
-    visibility: visible;
-    right: 3em;
-    bottom: 1em;
-  }
-
-  @media screen and (max-width: 768px) {
-    right: 5em;
-    bottom: 1em;
-  }
-
-  .move_catalog_svg {
-    @media screen and (max-width: 768px) {
-      width: 25px !important;
-      height: 25px !important;
-    }
-  }
-}
-/* 如果你是在 <style scoped> 中写 */
-:deep(.content_container) {
-  width: 100% !important;
-}
-</style>
+      id: 1,
+      title: "Vue3 实战教程",
+      description: "从零构建一个企业级 Vue3 项目",
+      fullDescription:
+        "从基础语法、Composition API 到项目架构，循序渐进掌握 Vue3。",
+      articles: 10,
+      views: 1392,
+      cover: "https://picsum.photos/seed/vue3/300/200",
+      author: {
+        name: "小明",
+        avatar: "https://i.pravatar.cc/40?img=12",
+      },
+    },
+    {
+      id: 2,
+      title: "后端进阶",
+      description: "深入理解 Java & SpringBoot",
+      fullDescription:
+        "涵盖 Java 高级特性、Spring 全家桶、微服务架构实战，提升后端开发能力。提升升后端开发能提升后端开发能提后端开发能提.",
+      articles: 5,
+      views: 896,
+      cover: "https://picsum.photos/seed/backend/300/200",
+      author: {
+        name: "小李",
+        avatar: "https://i.pravatar.cc/40?img=14",
+      },
+    },
+    {
+      id: 3,
+      title: "网络协议宝典",
+      description: "从 HTTP 到 TCP 的网络通信解析",
+      fullDescription: "透彻讲解网络协议体系，助你应对面试，夯实基础。",
+      articles: 8,
+      views: 1085,
+      cover: "https://picsum.photos/seed/network/300/200",
+      author: {
+        name: "小王",
+        avatar: "https://i.pravatar.cc/40?img=15",
+      },
+    },
+    // 你可以继续添加更多数据用来分页测试
+    {
+      id: 4,
+      title: "算法入门",
+      description: "从零开始学算法",
+      fullDescription: "数据结构 + 算法，面试必备，系统学习高频算法题。",
+      articles: 12,
+      views: 1234,
+      cover: "https://picsum.photos/seed/algorithm/300/200",
+      author: {
+        name: "小张",
+        avatar: "https://i.pravatar.cc/40?img=16",
+      },
+    },
+    {
+      id: 5,
+      title: "前端性能优化",
+      description: "让你的网站飞起来",
+      fullDescription: "深入浏览器底层机制，掌握前端性能调优的核心技巧。",
+      articles: 7,
+      views: 877,
+      cover: "https://picsum.photos/seed/performance/300/200",
+      author: {
+        name: "小刘",
+        avatar: "https://i.pravatar.cc/40?img=17",
+      },
+    },
+    {
+      id: 6,
+      title: "数据库实战",
+      description: "掌握 MySQL、Redis 等数据库核心",
+      fullDescription: "从建表设计到高并发优化，全面提升数据库实战能力。",
+      articles: 9,
+      views: 1345,
+      cover: "https://picsum.photos/seed/db/300/200",
+      author: {
+        name: "小杨",
+        avatar: "https://i.pravatar.cc/40?img=18",
+      },
+    },
+    {
+      id: 7,
+      title: "系统设计入门",
+      description: "大型系统怎么设计？",
+      fullDescription: "消息队列、负载均衡、服务拆分……构建高可用系统。",
+      articles: 6,
+      views: 1003,
+      cover: "https://picsum.photos/seed/systemdesign/300/200",
+      author: {
+        name: "小胡",
+        avatar: "https://i.pravatar.cc/40?img=19",
+      },
+    },
+  ];
+  </script>
+  
