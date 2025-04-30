@@ -1,14 +1,39 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <link rel="icon" type="image/svg+xml" href="/blog-icon.svg"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" />
+    <script>
+      const go = async () => {
+        const gif = {
+          gifList: ["/1.png", "/2.png", "/3.png", "/4.png", "/5.png"],
+          index: -1,
+          next() {
+            this.index += 1;
+            if (this.index > this.gifList.length - 1) {
+              this.index = 0;
+            }
+            return this.gifList[this.index];
+          },
+        };
+
+        setInterval(() => {
+          const link = document.querySelector("head > link[rel*='icon']");
+          const url = gif.next();
+          link.setAttribute("href", url);
+        }, 300);
+      };
+      go();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>qf-blog | 忙里偷闲的sin</title>
-    <link rel="stylesheet" href="//at.alicdn.com/t/c/font_4468698_ja5z7qsallk.css">
-</head>
-<body>
-<div id="app"></div>
-<script type="module" src="/src/main.ts"></script>
-</body>
+    <link
+      rel="stylesheet"
+      href="//at.alicdn.com/t/c/font_4468698_ja5z7qsallk.css"
+    />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
