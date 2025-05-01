@@ -17,7 +17,7 @@
             详情
           </button>
         </h2>
-        <p class="text-sm text-gray-500 mt-1">{{ data.description }}</p>
+        <p class="text-sm text-gray-500 mt-1 truncate-text" >{{ data.description }}</p>
         <div class="text-xs text-gray-400 mt-2">{{ data.articles }} 篇文章</div>
       </div>
 
@@ -26,18 +26,14 @@
         <div
           class="overflow-hidden transition-all duration-300 mt-4 text-sm text-gray-600 dark:text-gray-300"
         >
-          <div class="flex items-center mb-1">
+        <div>👁️ 浏览：{{ data.views }} 次</div>
+          <div class="flex items-center mb-1 mt-3 ">
             <img
               :src="data.author.avatar"
               class="w-6 h-6 rounded-full mr-2"
               alt="avatar"
             />
             👤 忙里偷闲的sin
-          </div>
-          <div>👁️ 浏览：{{ data.views }} 次</div>
-          <div class="mt-2 leading-relaxed">
-            <span class="truncate-text">📄 {{ data.fullDescription }}</span>
-
           </div>
         </div>
       </transition>
