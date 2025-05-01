@@ -50,7 +50,7 @@ const emit = defineEmits(["ReadingMode"]);
     <div class="mb-4" v-if="!scrollTarget">
       <ToTop v-if="toTop" />
     </div>
-    <div class="mb-4" v-else>
+    <div class="mb-4" v-if="scrollTarget">
       <MainToTop />
     </div>
     <!-- <div v-if="toComment" class="mb-4">

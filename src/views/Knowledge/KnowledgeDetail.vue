@@ -110,27 +110,37 @@
             </template>
           </el-menu>
         </el-drawer>
+        <!-- 移动端右侧目录抽屉（使用 md-editor-v3 的 MdCatalog） -->
+        <el-drawer
+          v-model="showCatalogDrawer"
+          direction="btt"
+          size="60%"
+          :with-header="false"
+        >
+          <MdCatalog editorId="preview-only" :scrollElement="scrollElement" />
+        </el-drawer>
 
         <el-main class="p-4">
-          <!-- 移动端顶部按钮 -->
+          <!-- 移动端按钮 -->
           <div class="flex justify-between md:hidden mb-2">
             <el-button
-              class="fixed bottom-4 left-4"
+              class="fixed bottom-4 left-4 mobileBtn"
               type="primary"
               size="small"
               @click="showMenuDrawer = true"
               >☰ 菜单</el-button
             >
           </div>
-          <!-- 移动端顶部按钮 -->
+          <!-- 移动端按钮 -->
           <div class="flex justify-between md:hidden mb-2">
             <el-button
-              class="fixed bottom-14 left-4"
-              type="primary"
+              class="fixed bottom-14 left-4 mobileBtn"
+              type="success"
               size="small"
-              @click="showMenuDrawer = true"
-              >☰ 目录</el-button
+              @click="isShowMoveCatalog = true"
             >
+              <span>☰ 目录</span>
+            </el-button>
           </div>
 
           <!-- 主体内容和右侧卡片（PC两列） -->
@@ -142,6 +152,7 @@
                 editorId="preview-only"
                 :modelValue="currentContent"
                 :theme="mode"
+                :on-html-changed="mdHtml"
               />
             </div>
 
@@ -155,6 +166,12 @@
             </div>
           </div>
         </el-main>
+        <MobileDirectoryCard
+          id="preview-only"
+          :scroll-element="scrollElement"
+          :is-show-move-catalog="isShowMoveCatalog"
+          @update:isShowMoveCatalog="(value) => (isShowMoveCatalog = value)"
+        />
       </el-container>
     </div>
     <div>
@@ -170,12 +187,14 @@ import { ArrowLeftBold, ArrowRightBold } from "@element-plus/icons-vue";
 import { ref, computed, onMounted } from "vue";
 import { useColorMode } from "@vueuse/core";
 import DirectoryCard from "../Article/DirectoryCard/index.vue";
+import MobileDirectoryCard from "../Article/MobileDirectoryCard/index.vue";
 import "md-editor-v3/lib/preview.css";
 const isCollapse = ref(false);
 const route = useRoute();
 const mode = useColorMode();
 const showMenuDrawer = ref(false);
-
+const isShowMoveCatalog = ref(false);
+const scrollElement = document.documentElement;
 const detailData = ref(null);
 // 字数 统计
 const countMd = ref(0);
@@ -350,7 +369,9 @@ function countWords(count: number) {
   transition: width 0.3s ease;
   overflow-x: hidden;
 }
-
+.mobileBtn {
+  color: var(--el-text-color-primary);
+}
 /* 菜单文本截断 */
 .menu-text {
   display: inline-block;

@@ -39,7 +39,7 @@ function backToTop() {
 </script>
 <template>
   <transition name="el-zoom-in-bottom">
-    <div v-if="top >= 2000" @click="backToTop">
+    <div v-if="top >= 1000" @click="backToTop">
       <el-tooltip effect="light" content="回到顶部" placement="left">
         <div>
           <svg-icon name="back_to_top" class="back-to-top" />
