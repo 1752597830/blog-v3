@@ -1,34 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { throttle } from "@/utils/optimize";
+import { computed } from "vue";
+import { useScrollStore } from "@/store/modules/scroll";
 
-// 滚动距离
-const top = ref(0);
-let mainEl: HTMLElement | null = null;
-
-const handleScroll = () => {
-  if (mainEl) {
-    top.value = mainEl.scrollTop;
-  }
-};
-
-const handleScrollThrottled = throttle(handleScroll, 200);
-
-onMounted(() => {
-  mainEl = document.querySelector("main");
-  if (mainEl) {
-    mainEl.addEventListener("scroll", handleScrollThrottled);
-  }
-});
-
-onBeforeUnmount(() => {
-  if (mainEl) {
-    mainEl.removeEventListener("scroll", handleScrollThrottled);
-  }
-});
+const scrollStore = useScrollStore();
+const top = computed(() => scrollStore.top);
 
 // 返回顶部
 function backToTop() {
+  const mainEl = document.querySelector("main");
   if (mainEl) {
     mainEl.scrollTo({
       top: 0,
@@ -37,6 +16,7 @@ function backToTop() {
   }
 }
 </script>
+
 <template>
   <transition name="el-zoom-in-bottom">
     <div v-if="top >= 1000" @click="backToTop">

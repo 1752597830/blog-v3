@@ -110,15 +110,6 @@
             </template>
           </el-menu>
         </el-drawer>
-        <!-- 移动端右侧目录抽屉（使用 md-editor-v3 的 MdCatalog） -->
-        <el-drawer
-          v-model="showCatalogDrawer"
-          direction="btt"
-          size="60%"
-          :with-header="false"
-        >
-          <MdCatalog editorId="preview-only" :scrollElement="scrollElement" />
-        </el-drawer>
 
         <el-main class="p-4">
           <!-- 移动端按钮 -->
@@ -149,7 +140,7 @@
             <div class="w-full md:w-3/4">
               <MdPreview
                 style="border-radius: 10px"
-                editorId="preview-only"
+                :editorId="id"
                 :modelValue="currentContent"
                 :theme="mode"
                 :on-html-changed="mdHtml"
@@ -161,14 +152,14 @@
               <CardInfo />
               <ElectronicClocks />
               <div class="sticky mt-4 top-20">
-                <DirectoryCard />
+                <DirectoryCard :id="id" :scroll-element="mainEl" />
               </div>
             </div>
           </div>
         </el-main>
         <MobileDirectoryCard
-          id="preview-only"
-          :scroll-element="scrollElement"
+          :id="id"
+          :scroll-element="mainEl"
           :is-show-move-catalog="isShowMoveCatalog"
           @update:isShowMoveCatalog="(value) => (isShowMoveCatalog = value)"
         />
@@ -194,16 +185,38 @@ const route = useRoute();
 const mode = useColorMode();
 const showMenuDrawer = ref(false);
 const isShowMoveCatalog = ref(false);
-const scrollElement = document.documentElement;
 const detailData = ref(null);
+import { throttle } from "@/utils/optimize";
+import { useScrollStore } from "@/store/modules/scroll";
+
+const scrollStore = useScrollStore();
+let mainEl: HTMLElement;
+
+const handleScroll = () => {
+  if (mainEl) {
+    scrollStore.setTop(mainEl.scrollTop);
+  }
+};
+
+const handleScrollThrottled = throttle(handleScroll, 200);
+
+onBeforeUnmount(() => {
+  if (mainEl) {
+    mainEl.removeEventListener("scroll", handleScrollThrottled);
+  }
+});
+const id = "preview-only";
 // 字数 统计
 const countMd = ref(0);
 onMounted(() => {
+  mainEl = document.querySelector("main");
+  if (mainEl) {
+    mainEl.addEventListener("scroll", handleScrollThrottled);
+  }
   const id = Number(route.params.id);
   const found = knowledgeList.id == id;
   detailData.value = found || null;
 });
-
 // ✅ 模拟数据（直接写在这里）
 const knowledgeList = {
   id: 1,

@@ -1,24 +1,31 @@
 <script setup lang="ts">
-import {MdCatalog} from 'md-editor-v3';
+import { MdCatalog } from 'md-editor-v3';
 
-const scrollElement = document.documentElement;
-const id = 'preview-only';
+const props = withDefaults(defineProps<{
+  id?: string;
+  scrollElement?: HTMLElement;
+}>(), {
+  id: 'preview-only'
+});
 
+const id = props.id!;
+const scrollEl = props.scrollElement || document.documentElement;
 </script>
 
 <template>
   <div class="card px-[10px]" v-slide-in>
     <div class="title">
       <div class="title_text">
-        <SvgIcon class="scale" name="directory" width="30" height="30"/>
+        <SvgIcon class="scale" name="directory" width="30" height="30" />
         <span style="margin-left: 10px">目录</span>
       </div>
     </div>
     <div class="min-h-[16em] max-h-[40em] overflow-y-auto">
-      <MdCatalog :editorId="id" :scrollElement="scrollElement"/>
+      <MdCatalog :editorId="id" :scrollElement="scrollEl" />
     </div>
   </div>
 </template>
+
 
 <style scoped lang="scss">
 
